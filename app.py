@@ -9,11 +9,11 @@ pio.renderers.default = "browser"
 # -----------------------------
 # Time Condition (5 PM to 7 PM)
 # -----------------------------
-#current_time = datetime.now()
+current_time = datetime.now()
 
-#if not (17 <= current_time.hour < 19):
- #   print("Graph is available only between 5 PM and 7 PM.")
-  #  exit()
+if not (17 <= current_time.hour < 19):
+   print("Graph is available only between 5 PM and 7 PM.")
+   exit()
 
 # -----------------------------
 # Load CSV files
