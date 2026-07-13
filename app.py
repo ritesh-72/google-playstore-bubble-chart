@@ -1,25 +1,22 @@
 import pandas as pd
 import plotly.express as px
-import plotly.io as pio
+import streamlit as st
 from datetime import datetime
 
-# Browser me graph open karne ke liye
-pio.renderers.default = "browser"
-
 # -----------------------------
-# Time Condition (5 PM to 7 PM)
+# Time Condition (5 PM to 7 PM IST)
 # -----------------------------
 current_time = datetime.now()
 
 if not (17 <= current_time.hour < 19):
-   print("Graph is available only between 5 PM and 7 PM.")
-   exit()
+   st.warning("Graph is available only between 5 PM and 7 PM IST.")
+   st.stop()
 
 # -----------------------------
 # Load CSV files
 # -----------------------------
 apps = pd.read_csv("googleplaystore.csv")
-reviews = pd.read_csv("googleplay_users_reviews..csv")   # <-- ek hi dot
+reviews = pd.read_csv("googleplay_users_reviews..csv")
 
 # -----------------------------
 # Merge datasets
@@ -65,7 +62,7 @@ df["Sentiment_Subjectivity"] = pd.to_numeric(
 )
 
 # -----------------------------
-# Categories
+# Required Categories
 # -----------------------------
 categories = [
     "GAME",
@@ -80,7 +77,7 @@ categories = [
 ]
 
 # -----------------------------
-# Filters
+# Apply Filters
 # -----------------------------
 filtered = df[
     (df["Rating"] > 3.5) &
@@ -91,19 +88,17 @@ filtered = df[
     (~df["App"].str.contains("S", case=False, na=False))
 ].copy()
 
-print("Filtered Records:", len(filtered))
-
 # -----------------------------
 # Translate Categories
 # -----------------------------
 filtered["Category"] = filtered["Category"].replace({
     "BEAUTY": "सौंदर्य",
     "BUSINESS": "வணிகம்",
-    "DATING": "Dating"
+    "DATING": "Partnersuche"
 })
 
 # -----------------------------
-# Colors
+# Color Mapping
 # -----------------------------
 color_map = {
     "GAME": "pink",
@@ -111,17 +106,19 @@ color_map = {
     "வணிகம்": "green",
     "COMICS": "orange",
     "COMMUNICATION": "red",
-    "Dating": "purple",
+    "Partnersuche": "purple",
     "ENTERTAINMENT": "blue",
     "SOCIAL": "cyan",
     "EVENTS": "gray"
 }
 
 # -----------------------------
-# Bubble Chart
+# Display Chart
 # -----------------------------
+st.title("Google Play Store Bubble Chart")
+
 if len(filtered) == 0:
-    print("No data available after applying filters.")
+    st.warning("No data available after applying filters.")
 else:
 
     fig = px.scatter(
@@ -142,4 +139,4 @@ else:
 
     fig.update_layout(width=1000, height=700)
 
-    fig.show()
+    st.plotly_chart(fig, use_container_width=True)
