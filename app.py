@@ -6,11 +6,14 @@ from datetime import datetime
 # -----------------------------
 # Time Condition (5 PM to 7 PM IST)
 # -----------------------------
-current_time = datetime.now()
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 if not (17 <= current_time.hour < 19):
-   st.warning("Graph is available only between 5 PM and 7 PM IST.")
-   st.stop()
+    st.warning("Graph is available only between 5 PM and 7 PM IST.")
+    st.stop()
 
 # -----------------------------
 # Load CSV files
