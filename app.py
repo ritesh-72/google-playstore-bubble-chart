@@ -15,7 +15,7 @@ current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 show_task1 = 17 <= current_time.hour < 19
 
 # Task 2: 6 PM to 8 PM IST
-show_task2 = 18 <= current_time.hour < 20
+show_task2 = 17 <= current_time.hour < 20
 
 
 # ==========================================================
