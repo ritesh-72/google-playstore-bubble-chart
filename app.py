@@ -2,34 +2,48 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from datetime import datetime
-
-# -----------------------------
-# Time Condition (5 PM to 7 PM IST)
-# -----------------------------
-from datetime import datetime
 from zoneinfo import ZoneInfo
+
+
+# ==========================================================
+# CURRENT TIME - INDIA (IST)
+# ==========================================================
 
 current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
-if not (17 <= current_time.hour < 19):
-    st.warning("Graph is available only between 5 PM and 7 PM IST.")
-    st.stop()
+# Task 1: 5 PM to 7 PM IST
+show_task1 = 17 <= current_time.hour < 19
 
-# -----------------------------
-# Load CSV files
-# -----------------------------
+# Task 2: 6 PM to 8 PM IST
+show_task2 = 18 <= current_time.hour < 20
+
+
+# ==========================================================
+# LOAD CSV FILES
+# ==========================================================
+
 apps = pd.read_csv("googleplaystore.csv")
 reviews = pd.read_csv("googleplay_users_reviews..csv")
 
-# -----------------------------
-# Merge datasets
-# -----------------------------
-df = pd.merge(apps, reviews, on="App", how="inner")
 
-# -----------------------------
-# Convert Size to MB
-# -----------------------------
+# ==========================================================
+# MERGE DATASETS
+# ==========================================================
+
+df = pd.merge(
+    apps,
+    reviews,
+    on="App",
+    how="inner"
+)
+
+
+# ==========================================================
+# CONVERT SIZE TO MB
+# ==========================================================
+
 def convert_size(size):
+
     size = str(size)
 
     if size.endswith("M"):
@@ -41,11 +55,14 @@ def convert_size(size):
     else:
         return None
 
+
 df["Size_MB"] = df["Size"].apply(convert_size)
 
-# -----------------------------
-# Convert Installs
-# -----------------------------
+
+# ==========================================================
+# CONVERT INSTALLS TO NUMERIC
+# ==========================================================
+
 df["Installs"] = (
     df["Installs"]
     .astype(str)
@@ -53,20 +70,36 @@ df["Installs"] = (
     .str.replace("+", "", regex=False)
 )
 
-df["Installs"] = pd.to_numeric(df["Installs"], errors="coerce")
-
-# -----------------------------
-# Numeric Columns
-# -----------------------------
-df["Rating"] = pd.to_numeric(df["Rating"], errors="coerce")
-df["Reviews"] = pd.to_numeric(df["Reviews"], errors="coerce")
-df["Sentiment_Subjectivity"] = pd.to_numeric(
-    df["Sentiment_Subjectivity"], errors="coerce"
+df["Installs"] = pd.to_numeric(
+    df["Installs"],
+    errors="coerce"
 )
 
-# -----------------------------
-# Required Categories
-# -----------------------------
+
+# ==========================================================
+# CONVERT NUMERIC COLUMNS
+# ==========================================================
+
+df["Rating"] = pd.to_numeric(
+    df["Rating"],
+    errors="coerce"
+)
+
+df["Reviews"] = pd.to_numeric(
+    df["Reviews"],
+    errors="coerce"
+)
+
+df["Sentiment_Subjectivity"] = pd.to_numeric(
+    df["Sentiment_Subjectivity"],
+    errors="coerce"
+)
+
+
+# ==========================================================
+# TASK 1 : BUBBLE CHART
+# ==========================================================
+
 categories = [
     "GAME",
     "BEAUTY",
@@ -79,9 +112,8 @@ categories = [
     "EVENTS"
 ]
 
-# -----------------------------
-# Apply Filters
-# -----------------------------
+
+# Apply Task 1 Filters
 filtered = df[
     (df["Rating"] > 3.5) &
     (df["Reviews"] > 500) &
@@ -91,58 +123,110 @@ filtered = df[
     (~df["App"].str.contains("S", case=False, na=False))
 ].copy()
 
-# -----------------------------
+
 # Translate Categories
-# -----------------------------
 filtered["Category"] = filtered["Category"].replace({
+
     "BEAUTY": "सौंदर्य",
+
     "BUSINESS": "வணிகம்",
+
     "DATING": "Partnersuche"
 })
 
-# -----------------------------
+
 # Color Mapping
-# -----------------------------
 color_map = {
+
     "GAME": "pink",
+
     "सौंदर्य": "gold",
+
     "வணிகம்": "green",
+
     "COMICS": "orange",
+
     "COMMUNICATION": "red",
+
     "Partnersuche": "purple",
+
     "ENTERTAINMENT": "blue",
+
     "SOCIAL": "cyan",
+
     "EVENTS": "gray"
 }
 
-# -----------------------------
-# Display Chart
-# -----------------------------
-st.title("Google Play Store Bubble Chart")
 
-if len(filtered) == 0:
-    st.warning("No data available after applying filters.")
-else:
+# Display Task 1
+if show_task1:
 
-    fig = px.scatter(
-        filtered,
-        x="Size_MB",
-        y="Rating",
-        size="Installs",
-        size_max=150,
-        color="Category",
-        color_discrete_map=color_map,
-        hover_name="App",
-        title="Bubble Chart: App Size (MB) vs Average Rating",
-        labels={
-            "Size_MB": "App Size (MB)",
-            "Rating": "Average Rating"
-        }
+    st.title(
+        "Task 1 : Google Play Store Bubble Chart"
     )
 
-    fig.update_layout(width=1000, height=700)
+    if len(filtered) == 0:
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.warning(
+            "No data available after applying filters."
+        )
+
+    else:
+
+        fig1 = px.scatter(
+
+            filtered,
+
+            x="Size_MB",
+
+            y="Rating",
+
+            size="Installs",
+
+            size_max=150,
+
+            color="Category",
+
+            color_discrete_map=color_map,
+
+            hover_name="App",
+
+            title=(
+                "Bubble Chart: "
+                "App Size (MB) vs Average Rating"
+            ),
+
+            labels={
+
+                "Size_MB":
+                "App Size (MB)",
+
+                "Rating":
+                "Average Rating"
+            }
+        )
+
+        fig1.update_layout(
+
+            width=1000,
+
+            height=700
+        )
+
+        st.plotly_chart(
+
+            fig1,
+
+            use_container_width=True
+        )
+
+else:
+
+    st.info(
+        "Task 1 graph is available only "
+        "between 5 PM and 7 PM IST."
+    )
+
 
 # ==========================================================
 # TASK 2 : INTERACTIVE CHOROPLETH MAP
