@@ -1,5 +1,6 @@
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 import streamlit as st
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -16,6 +17,9 @@ show_task1 = 17 <= current_time.hour < 19
 
 # Task 2: 6 PM to 8 PM IST
 show_task2 = 18 <= current_time.hour < 20
+
+# Task 3: 6 PM to 9 PM IST
+show_task3 = 18 <= current_time.hour < 21
 
 
 # ==========================================================
@@ -443,4 +447,407 @@ else:
 
         "Task 2 graph is available only "
         "between 6 PM and 8 PM IST."
+    )
+
+
+# ==========================================================
+# TASK 3 : TIME SERIES LINE CHART
+# ==========================================================
+
+if show_task3:
+
+    st.title(
+        "Task 3 : Time Series Install Trend"
+    )
+
+    st.write(
+        "Showing monthly install trends by app category "
+        "with periods of more than 20% month-over-month growth highlighted."
+    )
+
+
+    # ------------------------------------------------------
+    # LOAD TASK 3 DATA
+    # ------------------------------------------------------
+
+    df3 = pd.read_csv(
+        "googleplaystore.csv"
+    )
+
+
+    # ------------------------------------------------------
+    # CONVERT INSTALLS TO NUMERIC
+    # ------------------------------------------------------
+
+    df3["Installs"] = (
+
+        df3["Installs"]
+
+        .astype(str)
+
+        .str.replace(
+            ",",
+            "",
+            regex=False
+        )
+
+        .str.replace(
+            "+",
+            "",
+            regex=False
+        )
+    )
+
+    df3["Installs"] = pd.to_numeric(
+
+        df3["Installs"],
+
+        errors="coerce"
+    )
+
+
+    # ------------------------------------------------------
+    # CONVERT REVIEWS TO NUMERIC
+    # ------------------------------------------------------
+
+    df3["Reviews"] = pd.to_numeric(
+
+        df3["Reviews"],
+
+        errors="coerce"
+    )
+
+
+    # ------------------------------------------------------
+    # CONVERT LAST UPDATED TO DATE
+    # ------------------------------------------------------
+
+    df3["Last Updated"] = pd.to_datetime(
+
+        df3["Last Updated"],
+
+        errors="coerce"
+    )
+
+
+    # ------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # ------------------------------------------------------
+
+    df3 = df3.dropna(
+
+        subset=[
+            "App",
+            "Category",
+            "Installs",
+            "Reviews",
+            "Last Updated"
+        ]
+    )
+
+
+    # ------------------------------------------------------
+    # APPLY TASK 3 FILTERS
+    # ------------------------------------------------------
+
+    df3 = df3[
+
+        # Reviews should be greater than 500
+        (df3["Reviews"] > 500)
+
+        &
+
+        # App name should NOT start with X, Y or Z
+        (~df3["App"]
+         .str.upper()
+         .str.startswith(
+             ("X", "Y", "Z"),
+             na=False
+         ))
+
+        &
+
+        # App name should NOT contain letter S
+        (~df3["App"]
+         .str.contains(
+             "S",
+             case=False,
+             na=False
+         ))
+
+        &
+
+        # Category should start with E, C or B
+        (df3["Category"]
+         .str.upper()
+         .str.startswith(
+             ("E", "C", "B"),
+             na=False
+         ))
+
+    ].copy()
+
+
+    # ------------------------------------------------------
+    # TRANSLATE CATEGORIES
+    # ------------------------------------------------------
+
+    df3["Category"] = df3["Category"].replace({
+
+        "BEAUTY":
+        "सौंदर्य",
+
+        "BUSINESS":
+        "வணிகம்",
+
+        "DATING":
+        "Partnersuche"
+
+    })
+
+
+    # ------------------------------------------------------
+    # CREATE MONTH COLUMN
+    # ------------------------------------------------------
+
+    df3["Month"] = (
+
+        df3["Last Updated"]
+
+        .dt.to_period("M")
+
+        .dt.to_timestamp()
+
+    )
+
+
+    # ------------------------------------------------------
+    # GROUP BY MONTH AND CATEGORY
+    # ------------------------------------------------------
+
+    monthly_data = (
+
+        df3
+
+        .groupby(
+
+            [
+                "Month",
+                "Category"
+            ],
+
+            as_index=False
+
+        )["Installs"]
+
+        .sum()
+
+        .sort_values(
+
+            [
+                "Category",
+                "Month"
+            ]
+
+        )
+
+    )
+
+
+    # ------------------------------------------------------
+    # CALCULATE MOM GROWTH
+    # ------------------------------------------------------
+
+    monthly_data["MoM_Growth"] = (
+
+        monthly_data
+
+        .groupby(
+            "Category"
+        )["Installs"]
+
+        .pct_change()
+
+        * 100
+
+    )
+
+
+    # ------------------------------------------------------
+    # CREATE LINE CHART
+    # ------------------------------------------------------
+
+    fig3 = px.line(
+
+        monthly_data,
+
+        x="Month",
+
+        y="Installs",
+
+        color="Category",
+
+        markers=True,
+
+        title=(
+            "Time Series Trend of Total Installs "
+            "by App Category"
+        ),
+
+        labels={
+
+            "Month":
+            "Month",
+
+            "Installs":
+            "Total Installs",
+
+            "Category":
+            "App Category"
+
+        }
+
+    )
+
+
+    # ------------------------------------------------------
+    # HIGHLIGHT GROWTH > 20%
+    # ------------------------------------------------------
+
+    growth_data = monthly_data[
+
+        monthly_data["MoM_Growth"] > 20
+
+    ].copy()
+
+
+    # Add shaded area for significant growth periods
+    for category in growth_data["Category"].unique():
+
+        category_data = monthly_data[
+
+            monthly_data["Category"] == category
+
+        ].sort_values("Month")
+
+
+        growth_points = category_data[
+
+            category_data["MoM_Growth"] > 20
+
+        ]
+
+
+        if len(growth_points) > 0:
+
+            fig3.add_trace(
+
+                go.Scatter(
+
+                    x=growth_points["Month"],
+
+                    y=growth_points["Installs"],
+
+                    mode="lines",
+
+                    line=dict(
+
+                        width=0
+
+                    ),
+
+                    fill="tozeroy",
+
+                    fillcolor="rgba(255, 165, 0, 0.25)",
+
+                    name=(
+                        f"{category} "
+                        "Growth > 20%"
+                    ),
+
+                    hoverinfo="skip",
+
+                    showlegend=True
+
+                )
+
+            )
+
+
+    # ------------------------------------------------------
+    # UPDATE GRAPH
+    # ------------------------------------------------------
+
+    fig3.update_layout(
+
+        width=1000,
+
+        height=700,
+
+        xaxis_title="Month",
+
+        yaxis_title="Total Installs",
+
+        legend_title="App Category"
+
+    )
+
+
+    # ------------------------------------------------------
+    # DISPLAY GRAPH
+    # ------------------------------------------------------
+
+    st.plotly_chart(
+
+        fig3,
+
+        use_container_width=True
+
+    )
+
+
+    # ------------------------------------------------------
+    # SHOW SIGNIFICANT GROWTH TABLE
+    # ------------------------------------------------------
+
+    if len(growth_data) > 0:
+
+        st.subheader(
+
+            "Periods with More Than 20% "
+            "Month-over-Month Growth"
+        )
+
+        st.dataframe(
+
+            growth_data[
+
+                [
+                    "Month",
+                    "Category",
+                    "Installs",
+                    "MoM_Growth"
+                ]
+
+            ],
+
+            use_container_width=True
+
+        )
+
+    else:
+
+        st.info(
+
+            "No period with more than 20% "
+            "Month-over-Month growth was found."
+        )
+
+
+else:
+
+    st.info(
+
+        "Task 3 graph is available only "
+        "between 6 PM and 9 PM IST."
     )
