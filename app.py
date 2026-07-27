@@ -143,3 +143,220 @@ else:
     fig.update_layout(width=1000, height=700)
 
     st.plotly_chart(fig, use_container_width=True)
+
+# ==========================================================
+# TASK 2 : INTERACTIVE CHOROPLETH MAP
+# ==========================================================
+
+if show_task2:
+
+    st.title(
+        "Task 2 : Global Installs by Category"
+    )
+
+
+    # Read Dataset
+    df2 = pd.read_csv(
+        "googleplaystore.csv"
+    )
+
+
+    # Convert Installs to Numeric
+    df2["Installs"] = (
+
+        df2["Installs"]
+
+        .astype(str)
+
+        .str.replace(
+            ",",
+            "",
+            regex=False
+        )
+
+        .str.replace(
+            "+",
+            "",
+            regex=False
+        )
+    )
+
+
+    df2["Installs"] = pd.to_numeric(
+
+        df2["Installs"],
+
+        errors="coerce"
+    )
+
+
+    # Remove Missing Values
+    df2 = df2.dropna(
+
+        subset=[
+            "Category",
+            "Installs"
+        ]
+    )
+
+
+    # Remove Categories Starting with
+    # A, C, G and S
+    df2 = df2[
+
+        ~df2["Category"]
+
+        .str.upper()
+
+        .str.startswith(
+
+            (
+                "A",
+                "C",
+                "G",
+                "S"
+            ),
+
+            na=False
+        )
+    ]
+
+
+    # Top 5 Categories by Total Installs
+    top5 = (
+
+        df2
+
+        .groupby(
+
+            "Category",
+
+            as_index=False
+        )["Installs"]
+
+        .sum()
+
+        .sort_values(
+
+            "Installs",
+
+            ascending=False
+        )
+
+        .head(5)
+    )
+
+
+    # Check Top 5 Categories
+    if len(top5) < 5:
+
+        st.warning(
+
+            "Not enough categories available "
+            "to create the Choropleth map."
+        )
+
+
+    else:
+
+        # --------------------------------------------------
+        # NOTE:
+        # Original dataset does not contain Country data.
+        # Sample countries are assigned only for visualization.
+        # --------------------------------------------------
+
+        countries = [
+
+            "India",
+
+            "United States",
+
+            "Brazil",
+
+            "Germany",
+
+            "Australia"
+        ]
+
+
+        top5["Country"] = countries
+
+
+        # Highlight Categories Above 1 Million Installs
+        top5["Status"] = top5[
+
+            "Installs"
+
+        ].apply(
+
+            lambda x:
+
+            "Above 1 Million"
+
+            if x > 1000000
+
+            else "Below 1 Million"
+        )
+
+
+        # Create Choropleth Map
+        fig2 = px.choropleth(
+
+            top5,
+
+            locations="Country",
+
+            locationmode="country names",
+
+            color="Status",
+
+            hover_name="Category",
+
+            hover_data={
+
+                "Installs": True,
+
+                "Country": True,
+
+                "Status": True
+            },
+
+            color_discrete_map={
+
+                "Above 1 Million":
+                "red",
+
+                "Below 1 Million":
+                "lightblue"
+            },
+
+            title=(
+                "Global Installs "
+                "by Top 5 Categories"
+            )
+        )
+
+
+        fig2.update_layout(
+
+            width=1000,
+
+            height=650
+        )
+
+
+        st.plotly_chart(
+
+            fig2,
+
+            use_container_width=True
+        )
+
+
+else:
+
+    st.info(
+
+        "Task 2 graph is available only "
+        "between 6 PM and 8 PM IST."
+    )
