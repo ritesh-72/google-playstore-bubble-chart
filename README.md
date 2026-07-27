@@ -20,48 +20,126 @@ The project uses two CSV files:
 
 ---
 
-## Features
+## Task 1: Google Play Store Bubble Chart
 
-- Interactive Bubble Chart using Plotly
-- App Size (MB) vs Average Rating visualization
-- Bubble size represents Number of Installs
-- Category-wise color mapping
-- Dashboard available only between **5:00 PM and 7:00 PM IST**
+### Objective
+
+The objective of Task 1 is to analyze the relationship between **App Size (in MB)** and **Average Rating**, while using the **number of installs as the bubble size**.
 
 ### Filters Applied
 
-- Rating > 3.5
-- Reviews > 500
-- Sentiment Subjectivity > 0.5
-- Installs > 50,000
-- Selected Categories only
-- App name should not contain the letter **"S"**
-- Category translation (Hindi, Tamil, German)
-- Custom color mapping for categories
+The bubble chart displays apps based on the following conditions:
+
+* Rating greater than 3.5
+* Reviews greater than 500
+* Installs greater than 50,000
+* Sentiment Subjectivity greater than 0.5
+* Apps belonging to selected categories:
+
+  * Game
+  * Beauty
+  * Business
+  * Comics
+  * Communication
+  * Dating
+  * Entertainment
+  * Social
+  * Events
+* App names containing the letter "S" are excluded
+
+### Visualization
+
+The bubble chart represents:
+
+* **X-axis:** App Size in MB
+* **Y-axis:** Average Rating
+* **Bubble Size:** Number of Installs
+* **Bubble Color:** App Category
+
+The **Game** category is highlighted using a pink color, while other categories are displayed using different colors.
+
+Some category names are also translated for visualization:
+
+* Beauty → सौंदर्य
+* Business → வணிகம்
+* Dating → Partnersuche
+
+### Time Condition
+
+Task 1 is available only between **5:00 PM and 7:00 PM IST**.
 
 ---
 
-## Tools Used
+## Task 2: Interactive Choropleth Map
 
-- Python
-- Pandas
-- Plotly Express
-- Streamlit
-- GitHub
-- Streamlit Community Cloud
-- Visual Studio Code
+### Objective
 
----
+The objective of Task 2 is to visualize the **top 5 app categories based on total installs** using an interactive Choropleth map.
 
-## How to Run
+### Data Processing
 
-1. Open the hosted Streamlit application using the provided Website URL.
-2. Wait for the dashboard to load.
-3. The Bubble Chart will be displayed only between **5:00 PM and 7:00 PM IST**.
-4. Hover over any bubble to view the App Name, App Size, Rating, Installs, and Category.
-5. Explore the interactive visualization to analyze the relationship between App Size, Rating, and Number of Installs.
+The following data processing steps were performed:
 
----
+* Converted the Installs column into numeric format
+* Removed missing values
+* Excluded categories starting with:
+
+  * A
+  * C
+  * G
+  * S
+* Grouped the data by Category
+* Calculated total installs for each category
+* Selected the top 5 categories based on total installs
+
+### Visualization
+
+The Choropleth map represents:
+
+* **Country:** Geographic location displayed on the map
+* **Category:** Top 5 app categories
+* **Installs:** Total installs of each selected category
+* **Status:** Indicates whether total installs are above or below 1 million
+
+Categories with more than **1 million installs** are highlighted separately from categories below 1 million installs.
+
+### Time Condition
+
+Task 2 is available only between **6:00 PM and 8:00 PM IST**.
+
+
+## Technologies Used
+
+* Python
+* Pandas
+* Plotly Express
+* Streamlit
+* GitHub
+* Streamlit Cloud
+
+## How to Run the Project
+
+1. Clone or download the GitHub repository.
+2. Install the required Python libraries.
+3. Open the project folder in VS Code or another Python IDE.
+4. Run the Streamlit application using:
+
+```bash
+python -m streamlit run app.py
+```
+
+5. Open the local Streamlit URL in your web browser.
+
+## Live Dashboard
+
+The project is deployed using Streamlit Cloud.
+
+[Add your Streamlit Cloud link here]
+
+## GitHub Repository
+
+[Add your GitHub repository link here]
+
 
 ## Live Demo
 
