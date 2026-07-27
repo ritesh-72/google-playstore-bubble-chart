@@ -117,7 +117,10 @@ categories = [
 ]
 
 
-# Apply Task 1 Filters
+# ----------------------------------------------------------
+# TASK 1 FILTERS
+# ----------------------------------------------------------
+
 filtered = df[
     (df["Rating"] > 3.5) &
     (df["Reviews"] > 500) &
@@ -128,7 +131,10 @@ filtered = df[
 ].copy()
 
 
-# Translate Categories
+# ----------------------------------------------------------
+# TRANSLATE CATEGORIES
+# ----------------------------------------------------------
+
 filtered["Category"] = filtered["Category"].replace({
 
     "BEAUTY": "सौंदर्य",
@@ -136,10 +142,14 @@ filtered["Category"] = filtered["Category"].replace({
     "BUSINESS": "வணிகம்",
 
     "DATING": "Partnersuche"
+
 })
 
 
-# Color Mapping
+# ----------------------------------------------------------
+# COLOR MAPPING
+# ----------------------------------------------------------
+
 color_map = {
 
     "GAME": "pink",
@@ -159,20 +169,24 @@ color_map = {
     "SOCIAL": "cyan",
 
     "EVENTS": "gray"
+
 }
 
 
-# Display Task 1
+# ----------------------------------------------------------
+# DISPLAY TASK 1
+# ----------------------------------------------------------
+
 if show_task1:
 
     st.title(
         "Task 1 : Google Play Store Bubble Chart"
     )
 
-    if len(filtered) == 0:
+    if filtered.empty:
 
         st.warning(
-            "No data available after applying filters."
+            "No data available after applying Task 1 filters."
         )
 
     else:
@@ -206,8 +220,13 @@ if show_task1:
                 "App Size (MB)",
 
                 "Rating":
-                "Average Rating"
+                "Average Rating",
+
+                "Installs":
+                "Number of Installs"
+
             }
+
         )
 
         fig1.update_layout(
@@ -215,6 +234,7 @@ if show_task1:
             width=1000,
 
             height=700
+
         )
 
         st.plotly_chart(
@@ -222,6 +242,7 @@ if show_task1:
             fig1,
 
             use_container_width=True
+
         )
 
 else:
@@ -243,13 +264,19 @@ if show_task2:
     )
 
 
-    # Read Dataset
+    # ------------------------------------------------------
+    # READ DATASET
+    # ------------------------------------------------------
+
     df2 = pd.read_csv(
         "googleplaystore.csv"
     )
 
 
-    # Convert Installs to Numeric
+    # ------------------------------------------------------
+    # CONVERT INSTALLS TO NUMERIC
+    # ------------------------------------------------------
+
     df2["Installs"] = (
 
         df2["Installs"]
@@ -267,29 +294,37 @@ if show_task2:
             "",
             regex=False
         )
-    )
 
+    )
 
     df2["Installs"] = pd.to_numeric(
 
         df2["Installs"],
 
         errors="coerce"
+
     )
 
 
-    # Remove Missing Values
+    # ------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # ------------------------------------------------------
+
     df2 = df2.dropna(
 
         subset=[
             "Category",
             "Installs"
         ]
+
     )
 
 
-    # Remove Categories Starting with
-    # A, C, G and S
+    # ------------------------------------------------------
+    # REMOVE CATEGORIES STARTING WITH
+    # A, C, G AND S
+    # ------------------------------------------------------
+
     df2 = df2[
 
         ~df2["Category"]
@@ -306,11 +341,16 @@ if show_task2:
             ),
 
             na=False
+
         )
+
     ]
 
 
-    # Top 5 Categories by Total Installs
+    # ------------------------------------------------------
+    # TOP 5 CATEGORIES BY TOTAL INSTALLS
+    # ------------------------------------------------------
+
     top5 = (
 
         df2
@@ -320,6 +360,7 @@ if show_task2:
             "Category",
 
             as_index=False
+
         )["Installs"]
 
         .sum()
@@ -329,28 +370,33 @@ if show_task2:
             "Installs",
 
             ascending=False
+
         )
 
         .head(5)
+
     )
 
 
-    # Check Top 5 Categories
+    # ------------------------------------------------------
+    # CHECK TOP 5
+    # ------------------------------------------------------
+
     if len(top5) < 5:
 
         st.warning(
 
             "Not enough categories available "
             "to create the Choropleth map."
-        )
 
+        )
 
     else:
 
         # --------------------------------------------------
         # NOTE:
         # Original dataset does not contain Country data.
-        # Sample countries are assigned only for visualization.
+        # Sample countries are assigned for visualization.
         # --------------------------------------------------
 
         countries = [
@@ -364,13 +410,17 @@ if show_task2:
             "Germany",
 
             "Australia"
+
         ]
 
 
         top5["Country"] = countries
 
 
-        # Highlight Categories Above 1 Million Installs
+        # --------------------------------------------------
+        # HIGHLIGHT INSTALLS ABOVE 1 MILLION
+        # --------------------------------------------------
+
         top5["Status"] = top5[
 
             "Installs"
@@ -384,10 +434,14 @@ if show_task2:
             if x > 1000000
 
             else "Below 1 Million"
+
         )
 
 
-        # Create Choropleth Map
+        # --------------------------------------------------
+        # CREATE CHOROPLETH MAP
+        # --------------------------------------------------
+
         fig2 = px.choropleth(
 
             top5,
@@ -407,6 +461,7 @@ if show_task2:
                 "Country": True,
 
                 "Status": True
+
             },
 
             color_discrete_map={
@@ -416,12 +471,14 @@ if show_task2:
 
                 "Below 1 Million":
                 "lightblue"
+
             },
 
             title=(
                 "Global Installs "
                 "by Top 5 Categories"
             )
+
         )
 
 
@@ -430,6 +487,7 @@ if show_task2:
             width=1000,
 
             height=650
+
         )
 
 
@@ -438,6 +496,7 @@ if show_task2:
             fig2,
 
             use_container_width=True
+
         )
 
 
@@ -447,6 +506,7 @@ else:
 
         "Task 2 graph is available only "
         "between 6 PM and 8 PM IST."
+
     )
 
 
@@ -460,9 +520,10 @@ if show_task3:
         "Task 3 : Time Series Install Trend"
     )
 
-    st.write(
-        "Showing monthly install trends by app category "
-        "with periods of more than 20% month-over-month growth highlighted."
+
+    st.caption(
+        "Task 3 uses the Last Updated month as the "
+        "available time field in the dataset."
     )
 
 
@@ -496,6 +557,7 @@ if show_task3:
             "",
             regex=False
         )
+
     )
 
     df3["Installs"] = pd.to_numeric(
@@ -503,6 +565,7 @@ if show_task3:
         df3["Installs"],
 
         errors="coerce"
+
     )
 
 
@@ -515,6 +578,7 @@ if show_task3:
         df3["Reviews"],
 
         errors="coerce"
+
     )
 
 
@@ -527,6 +591,7 @@ if show_task3:
         df3["Last Updated"],
 
         errors="coerce"
+
     )
 
 
@@ -537,12 +602,19 @@ if show_task3:
     df3 = df3.dropna(
 
         subset=[
+
             "App",
+
             "Category",
+
             "Installs",
+
             "Reviews",
+
             "Last Updated"
+
         ]
+
     )
 
 
@@ -552,296 +624,444 @@ if show_task3:
 
     df3 = df3[
 
-        # Reviews should be greater than 500
+        # Reviews > 500
         (df3["Reviews"] > 500)
 
         &
 
         # App name should NOT start with X, Y or Z
         (~df3["App"]
+
          .str.upper()
+
          .str.startswith(
+
              ("X", "Y", "Z"),
+
              na=False
+
          ))
 
         &
 
         # App name should NOT contain letter S
         (~df3["App"]
+
          .str.contains(
+
              "S",
+
              case=False,
+
              na=False
+
          ))
 
         &
 
         # Category should start with E, C or B
         (df3["Category"]
+
          .str.upper()
+
          .str.startswith(
+
              ("E", "C", "B"),
+
              na=False
+
          ))
 
     ].copy()
 
 
     # ------------------------------------------------------
-    # TRANSLATE CATEGORIES
+    # CHECK FILTERED DATA
     # ------------------------------------------------------
 
-    df3["Category"] = df3["Category"].replace({
+    if df3.empty:
 
-        "BEAUTY":
-        "सौंदर्य",
+        st.warning(
 
-        "BUSINESS":
-        "வணிகம்",
-
-        "DATING":
-        "Partnersuche"
-
-    })
-
-
-    # ------------------------------------------------------
-    # CREATE MONTH COLUMN
-    # ------------------------------------------------------
-
-    df3["Month"] = (
-
-        df3["Last Updated"]
-
-        .dt.to_period("M")
-
-        .dt.to_timestamp()
-
-    )
-
-
-    # ------------------------------------------------------
-    # GROUP BY MONTH AND CATEGORY
-    # ------------------------------------------------------
-
-    monthly_data = (
-
-        df3
-
-        .groupby(
-
-            [
-                "Month",
-                "Category"
-            ],
-
-            as_index=False
-
-        )["Installs"]
-
-        .sum()
-
-        .sort_values(
-
-            [
-                "Category",
-                "Month"
-            ]
-
-        )
-
-    )
-
-
-    # ------------------------------------------------------
-    # CALCULATE MOM GROWTH
-    # ------------------------------------------------------
-
-    monthly_data["MoM_Growth"] = (
-
-        monthly_data
-
-        .groupby(
-            "Category"
-        )["Installs"]
-
-        .pct_change()
-
-        * 100
-
-    )
-
-
-    # ------------------------------------------------------
-    # CREATE LINE CHART
-    # ------------------------------------------------------
-
-    fig3 = px.line(
-
-        monthly_data,
-
-        x="Month",
-
-        y="Installs",
-
-        color="Category",
-
-        markers=True,
-
-        title=(
-            "Time Series Trend of Total Installs "
-            "by App Category"
-        ),
-
-        labels={
-
-            "Month":
-            "Month",
-
-            "Installs":
-            "Total Installs",
-
-            "Category":
-            "App Category"
-
-        }
-
-    )
-
-
-    # ------------------------------------------------------
-    # HIGHLIGHT GROWTH > 20%
-    # ------------------------------------------------------
-
-    growth_data = monthly_data[
-
-        monthly_data["MoM_Growth"] > 20
-
-    ].copy()
-
-
-    # Add shaded area for significant growth periods
-    for category in growth_data["Category"].unique():
-
-        category_data = monthly_data[
-
-            monthly_data["Category"] == category
-
-        ].sort_values("Month")
-
-
-        growth_points = category_data[
-
-            category_data["MoM_Growth"] > 20
-
-        ]
-
-
-        if len(growth_points) > 0:
-
-            fig3.add_trace(
-
-                go.Scatter(
-
-                    x=growth_points["Month"],
-
-                    y=growth_points["Installs"],
-
-                    mode="lines",
-
-                    line=dict(
-
-                        width=0
-
-                    ),
-
-                    fill="tozeroy",
-
-                    fillcolor="rgba(255, 165, 0, 0.25)",
-
-                    name=(
-                        f"{category} "
-                        "Growth > 20%"
-                    ),
-
-                    hoverinfo="skip",
-
-                    showlegend=True
-
-                )
-
-            )
-
-
-    # ------------------------------------------------------
-    # UPDATE GRAPH
-    # ------------------------------------------------------
-
-    fig3.update_layout(
-
-        width=1000,
-
-        height=700,
-
-        xaxis_title="Month",
-
-        yaxis_title="Total Installs",
-
-        legend_title="App Category"
-
-    )
-
-
-    # ------------------------------------------------------
-    # DISPLAY GRAPH
-    # ------------------------------------------------------
-
-    st.plotly_chart(
-
-        fig3,
-
-        use_container_width=True
-
-    )
-
-
-    # ------------------------------------------------------
-    # SHOW SIGNIFICANT GROWTH TABLE
-    # ------------------------------------------------------
-
-    if len(growth_data) > 0:
-
-        st.subheader(
-
-            "Periods with More Than 20% "
-            "Month-over-Month Growth"
-        )
-
-        st.dataframe(
-
-            growth_data[
-
-                [
-                    "Month",
-                    "Category",
-                    "Installs",
-                    "MoM_Growth"
-                ]
-
-            ],
-
-            use_container_width=True
+            "No data available after applying "
+            "Task 3 filters."
 
         )
 
     else:
 
-        st.info(
+        # --------------------------------------------------
+        # TRANSLATE CATEGORIES
+        # --------------------------------------------------
 
-            "No period with more than 20% "
-            "Month-over-Month growth was found."
+        df3["Category"] = df3["Category"].replace({
+
+            "BEAUTY":
+            "सौंदर्य",
+
+            "BUSINESS":
+            "வணிகம்",
+
+            "DATING":
+            "Partnersuche"
+
+        })
+
+
+        # --------------------------------------------------
+        # CREATE MONTH COLUMN
+        # --------------------------------------------------
+
+        df3["Month"] = (
+
+            df3["Last Updated"]
+
+            .dt.to_period("M")
+
+            .dt.to_timestamp()
+
         )
+
+
+        # --------------------------------------------------
+        # GROUP BY MONTH AND CATEGORY
+        # --------------------------------------------------
+
+        monthly_data = (
+
+            df3
+
+            .groupby(
+
+                [
+
+                    "Month",
+
+                    "Category"
+
+                ],
+
+                as_index=False
+
+            )["Installs"]
+
+            .sum()
+
+            .sort_values(
+
+                [
+
+                    "Category",
+
+                    "Month"
+
+                ]
+
+            )
+
+        )
+
+
+        # --------------------------------------------------
+        # CALCULATE MONTH-OVER-MONTH GROWTH
+        # --------------------------------------------------
+
+        monthly_data["MoM_Growth"] = (
+
+            monthly_data
+
+            .groupby(
+
+                "Category"
+
+            )["Installs"]
+
+            .pct_change()
+
+            .mul(100)
+
+        )
+
+
+        # --------------------------------------------------
+        # CREATE MAIN LINE CHART
+        # --------------------------------------------------
+
+        fig3 = px.line(
+
+            monthly_data,
+
+            x="Month",
+
+            y="Installs",
+
+            color="Category",
+
+            markers=True,
+
+            title=(
+
+                "Time Series Trend of Total Installs "
+
+                "by App Category"
+
+            ),
+
+            labels={
+
+                "Month":
+                "Month",
+
+                "Installs":
+                "Total Installs",
+
+                "Category":
+                "App Category"
+
+            }
+
+        )
+
+
+        # --------------------------------------------------
+        # FIND PERIODS WITH >20% GROWTH
+        # --------------------------------------------------
+
+        growth_data = monthly_data[
+
+            monthly_data["MoM_Growth"] > 20
+
+        ].copy()
+
+
+        # --------------------------------------------------
+        # HIGHLIGHT SIGNIFICANT GROWTH
+        # --------------------------------------------------
+
+        if not growth_data.empty:
+
+            first_growth_trace = True
+
+
+            for category in growth_data["Category"].unique():
+
+                category_all = monthly_data[
+
+                    monthly_data["Category"] == category
+
+                ].sort_values(
+
+                    "Month"
+
+                )
+
+
+                category_growth = growth_data[
+
+                    growth_data["Category"] == category
+
+                ].sort_values(
+
+                    "Month"
+
+                )
+
+
+                for _, row in category_growth.iterrows():
+
+                    current_month = row["Month"]
+
+                    current_index = category_all.index[
+                        category_all["Month"] == current_month
+                    ].tolist()
+
+
+                    if not current_index:
+
+                        continue
+
+
+                    current_position = (
+                        category_all.index.get_loc(
+                            current_index[0]
+                        )
+                    )
+
+
+                    # Need previous month data
+                    if current_position == 0:
+
+                        continue
+
+
+                    previous_row = category_all.iloc[
+                        current_position - 1
+                    ]
+
+
+                    # Create a two-point shaded region
+                    shade_x = [
+
+                        previous_row["Month"],
+
+                        current_month,
+
+                        current_month,
+
+                        previous_row["Month"]
+
+                    ]
+
+
+                    shade_y = [
+
+                        0,
+
+                        0,
+
+                        row["Installs"],
+
+                        previous_row["Installs"]
+
+                    ]
+
+
+                    fig3.add_trace(
+
+                        go.Scatter(
+
+                            x=shade_x,
+
+                            y=shade_y,
+
+                            fill="toself",
+
+                            fillcolor=(
+                                "rgba(255, 165, 0, 0.20)"
+                            ),
+
+                            line=dict(
+
+                                width=0
+
+                            ),
+
+                            mode="lines",
+
+                            name=(
+                                "Growth > 20%"
+                                if first_growth_trace
+                                else category
+                            ),
+
+                            legendgroup="growth",
+
+                            showlegend=first_growth_trace,
+
+                            hoverinfo="skip"
+
+                        )
+
+                    )
+
+
+                    first_growth_trace = False
+
+
+        # --------------------------------------------------
+        # GRAPH SETTINGS
+        # --------------------------------------------------
+
+        fig3.update_layout(
+
+            width=1000,
+
+            height=700,
+
+            xaxis_title="Month",
+
+            yaxis_title="Total Installs",
+
+            legend_title="App Category",
+
+            hovermode="x unified"
+
+        )
+
+
+        # --------------------------------------------------
+        # DISPLAY GRAPH
+        # --------------------------------------------------
+
+        st.plotly_chart(
+
+            fig3,
+
+            use_container_width=True
+
+        )
+
+
+        # --------------------------------------------------
+        # DISPLAY GROWTH TABLE
+        # --------------------------------------------------
+
+        if not growth_data.empty:
+
+            st.subheader(
+
+                "Periods with More Than 20% "
+                "Month-over-Month Growth"
+
+            )
+
+
+            display_growth = growth_data[
+
+                [
+
+                    "Month",
+
+                    "Category",
+
+                    "Installs",
+
+                    "MoM_Growth"
+
+                ]
+
+            ].copy()
+
+
+            display_growth["MoM_Growth"] = (
+
+                display_growth["MoM_Growth"]
+
+                .round(2)
+
+                .astype(str)
+
+                + "%"
+
+            )
+
+
+            st.dataframe(
+
+                display_growth,
+
+                use_container_width=True
+
+            )
+
+        else:
+
+            st.info(
+
+                "No period with more than 20% "
+                "Month-over-Month growth was found."
+
+            )
 
 
 else:
@@ -850,4 +1070,5 @@ else:
 
         "Task 3 graph is available only "
         "between 6 PM and 9 PM IST."
+
     )
