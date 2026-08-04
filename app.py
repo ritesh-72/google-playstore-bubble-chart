@@ -13,13 +13,13 @@ from zoneinfo import ZoneInfo
 current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 # Task 1: 5 PM to 7 PM IST
-show_task1 = 17 <= current_time.hour < 19
+show_task1 = 17 <= current_time.hour < 24
 
 # Task 2: 6 PM to 8 PM IST
-show_task2 = 18 <= current_time.hour < 20
+show_task2 = 18 <= current_time.hour < 24
 
 # Task 3: 6 PM to 9 PM IST
-show_task3 = 18 <= current_time.hour < 21
+show_task3 = 18 <= current_time.hour < 24
 
 
 # ==========================================================
