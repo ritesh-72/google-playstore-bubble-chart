@@ -1,4 +1,4 @@
-import pandas as pd
+-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
@@ -13,22 +13,22 @@ from zoneinfo import ZoneInfo
 current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 # Task 1: 5 PM to 7 PM IST
-show_task1 = 17 <= current_time.hour < 19
+show_task1 = 17 <= current_time.hour < 24
 
 # Task 2: 6 PM to 8 PM IST
-show_task2 = 18 <= current_time.hour < 20
+show_task2 = 18 <= current_time.hour < 24
 
 # Task 3: 6 PM to 9 PM IST
-show_task3 = 18 <= current_time.hour < 21
+show_task3 = 18 <= current_time.hour < 24
 
 # Task 4: 4 PM to 6 PM IST
-show_task4 = 16 <= current_time.hour < 18
+show_task4 = 16 <= current_time.hour < 24
 
 # Task 5: 3 PM to 5 PM IST
-show_task5 = 15 <= current_time.hour < 17
+show_task5 = 15 <= current_time.hour < 24
 
 # Task 6: 1 PM to 2 PM IST
-show_task6 = 13 <= current_time.hour < 14
+show_task6 = 13 <= current_time.hour < 24
 
 
 # ==========================================================
