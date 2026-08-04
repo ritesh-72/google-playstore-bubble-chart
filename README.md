@@ -1,153 +1,254 @@
-  ## PROJECT NAME
-  Google Play Store Apps Bubble Chart Analysis using Python, Plotly & Streamlit
+# 📊 Google Play Store Data Analytics Dashboard
 
-## Project Description
+## 📌 Project Overview
 
-This project analyzes Google Play Store application data using Python, Pandas, Plotly, and Streamlit.
+This project is an interactive **Google Play Store Data Analytics Dashboard** developed using **Python, Pandas, Plotly, and Streamlit**.
 
-It combines app information with user review data to create an interactive Bubble Chart showing the relationship between **App Size (MB)** and **Average Rating**, where the bubble size represents the **Number of Installs**.
+The dashboard analyzes Google Play Store application data through multiple interactive visualizations. It provides insights into app ratings, reviews, installs, categories, app size, sentiment, growth trends, and Free vs Paid applications.
 
-Multiple filters are applied to provide meaningful insights, and the application is deployed on **Streamlit Community Cloud**.
-
----
-
-## Dataset
-
-The project uses two CSV files:
-
-- **googleplaystore.csv** – Contains application details.
-- **googleplay_users_reviews.csv** – Contains user review data.
+The project contains **6 analytical tasks**, each with specific filters and time-based graph availability.
 
 ---
 
-## Task 1: Google Play Store Bubble Chart
+## 🚀 Project Features
 
-### Objective
-
-The objective of Task 1 is to analyze the relationship between **App Size (in MB)** and **Average Rating**, while using the **number of installs as the bubble size**.
-
-### Filters Applied
-
-The bubble chart displays apps based on the following conditions:
-
-* Rating greater than 3.5
-* Reviews greater than 500
-* Installs greater than 50,000
-* Sentiment Subjectivity greater than 0.5
-* Apps belonging to selected categories:
-
-  * Game
-  * Beauty
-  * Business
-  * Comics
-  * Communication
-  * Dating
-  * Entertainment
-  * Social
-  * Events
-* App names containing the letter "S" are excluded
-
-### Visualization
-
-The bubble chart represents:
-
-* **X-axis:** App Size in MB
-* **Y-axis:** Average Rating
-* **Bubble Size:** Number of Installs
-* **Bubble Color:** App Category
-
-The **Game** category is highlighted using a pink color, while other categories are displayed using different colors.
-
-Some category names are also translated for visualization:
-
-* Beauty → सौंदर्य
-* Business → வணிகம்
-* Dating → Partnersuche
-
-### Time Condition
-
-Task 1 is available only between **5:00 PM and 7:00 PM IST**.
+- Interactive Google Play Store data analysis
+- Interactive Plotly visualizations
+- Bubble Chart
+- Choropleth Map
+- Time Series Line Chart
+- Stacked Area Chart
+- Grouped Bar Chart
+- Dual-Axis Chart
+- Rating and review analysis
+- Install analysis
+- App category analysis
+- Sentiment analysis
+- Free vs Paid app comparison
+- Revenue analysis
+- Multilingual category labels
+- Time-based graph visibility using IST
 
 ---
 
-## Task 2: Interactive Choropleth Map
+## 📈 Tasks & Visualizations
 
-### Objective
+### Task 1 — Bubble Chart
 
-The objective of Task 2 is to visualize the **top 5 app categories based on total installs** using an interactive Choropleth map.
+A Bubble Chart is used to analyze the relationship between **App Size (MB)** and **Average Rating**, with bubble size representing the number of installs.
 
-### Data Processing
+#### Filters
 
-The following data processing steps were performed:
+- Rating > 3.5
+- Reviews > 500
+- Installs > 50,000
+- Sentiment Subjectivity > 0.5
+- App name should not contain the letter `S`
+- Categories:
+  - Game
+  - Beauty
+  - Business
+  - Comics
+  - Communication
+  - Dating
+  - Entertainment
+  - Social
+  - Event
+- Game category is highlighted in pink
+- Category translations:
+  - Beauty → Hindi
+  - Business → Tamil
+  - Dating → German
 
-* Converted the Installs column into numeric format
-* Removed missing values
-* Excluded categories starting with:
+#### Availability
 
-  * A
-  * C
-  * G
-  * S
-* Grouped the data by Category
-* Calculated total installs for each category
-* Selected the top 5 categories based on total installs
+**5 PM – 7 PM IST**
 
-### Visualization
+---
 
-The Choropleth map represents:
+### Task 2 — Interactive Choropleth Map
 
-* **Country:** Geographic location displayed on the map
-* **Category:** Top 5 app categories
-* **Installs:** Total installs of each selected category
-* **Status:** Indicates whether total installs are above or below 1 million
+An interactive **Plotly Choropleth Map** is used to visualize installs by app category.
 
-Categories with more than **1 million installs** are highlighted separately from categories below 1 million installs.
+#### Filters
 
-### Time Condition
+- Top 5 app categories
+- Categories starting with `A`, `C`, `G`, or `S` are excluded
+- Categories with installs exceeding 1 million are highlighted
 
-Task 2 is available only between **6:00 PM and 8:00 PM IST**.
+#### Availability
 
+**6 PM – 8 PM IST**
 
-## Technologies Used
+---
 
-* Python
-* Pandas
-* Plotly Express
-* Streamlit
-* GitHub
-* Streamlit Cloud
+### Task 3 — Time Series Line Chart
 
-## How to Run the Project
+A Time Series Line Chart is used to show the trend of total installs over time, segmented by app category.
 
-1. Clone or download the GitHub repository.
-2. Install the required Python libraries.
-3. Open the project folder in VS Code or another Python IDE.
-4. Run the Streamlit application using:
+#### Filters
 
-```bash
-python -m streamlit run app.py
-```
+- Reviews > 500
+- App name should not start with:
+  - X
+  - Y
+  - Z
+- App name should not contain `S`
+- App category should start with:
+  - E
+  - C
+  - B
+- Beauty → Hindi
+- Business → Tamil
+- Dating → German
+- Areas with more than 20% month-over-month growth are highlighted
 
-5. Open the local Streamlit URL in your web browser.
+#### Availability
 
-## Live Dashboard
+**6 PM – 9 PM IST**
 
-The project is deployed using Streamlit Cloud.
+---
 
-[Add your Streamlit Cloud link here]
+### Task 4 — Stacked Area Chart
 
-## GitHub Repository
+A Stacked Area Chart is used to visualize the cumulative number of installs over time for each app category.
 
-[Add your GitHub repository link here]
+#### Filters
 
+- Average Rating >= 4.2
+- App name should not contain numbers
+- App category should start with:
+  - T
+  - P
+- Reviews > 1,000
+- App Size between 20 MB and 80 MB
 
-## Live Demo
+#### Category Translation
 
-**Website:** 
-- https://app-playstore-bubble-chart-qsge9tqslyj6asem6236pv.streamlit.app/
+- Travel & Local → French
+- Productivity → Spanish
+- Photography → Japanese
+
+Months where installs increased by more than 25% month-over-month are highlighted.
+
+#### Availability
+
+**4 PM – 6 PM IST**
+
+---
+
+### Task 5 — Grouped Bar Chart
+
+A Grouped Bar Chart is used to compare **Average Rating** and **Total Review Count** for the top 10 app categories by number of installs.
+
+#### Filters
+
+- Average Rating >= 4.0
+- App Size >= 10 MB
+- Last Updated month = January
+- Top 10 categories are selected based on total installs
+
+#### Availability
+
+**3 PM – 5 PM IST**
+
+---
+
+### Task 6 — Dual-Axis Chart
+
+A Dual-Axis Chart is used to compare **Average Installs** and **Revenue** for Free vs Paid apps within the top 3 app categories.
+
+#### Filters
+
+- Installs >= 10,000
+- Revenue >= $10,000 for paid apps
+- Android Version > 4.0
+- App Size > 15 MB
+- Content Rating = Everyone
+- App name length <= 30 characters
+- Spaces and special characters are included in the character count
+- Top 3 categories are selected based on installs
+- Free vs Paid applications are compared
+
+#### Availability
+
+**1 PM – 2 PM IST**
+
+---
+
+## 🛠️ Technologies Used
+
+- **Python**
+- **Pandas**
+- **Plotly**
+- **Streamlit**
+- **Git**
+- **GitHub**
+
+---
+
+## 📂 Datasets
+
+This project uses two CSV datasets:
+
+### 1. Google Play Store Dataset
+
+**File:** `googleplaystore.csv`
+
+Contains information such as:
+
+- App
+- Category
+- Rating
+- Reviews
+- Size
+- Installs
+- Type
+- Price
+- Content Rating
+- Last Updated
+- Android Version
+
+### 2. Google Play Store User Reviews Dataset
+
+**File:** `googleplay_users_reviews.csv`
+
+Contains:
+
+- App
+- Translated Review
+- Sentiment
+- Sentiment Polarity
+- Sentiment Subjectivity
+
+### 🔗 Dataset Link
+
+**Google Drive – Datasets:**  
+https://drive.google.com/drive/folders/1r6bUkfvJVi4bI5z9fIhD5L5rytQvbBu3?usp=sharing
+
+---
+
+## 💻 Source Code
+
+The complete source code is available on GitHub.
 
 **GitHub Repository:**  
-- https://github.com/ritesh-72/google-playstore-bubble-chart.git
+https://github.com/ritesh-72/google-playstore-bubble-chart.git
 
-**Dataset (Google Drive):** 
-- https://drive.google.com/drive/folders/1r6bUkfvJVi4bI5z9fIhD5L5rytQvbBu3?usp=sharing
+---
+
+## 🌐 Live Demo
+
+The project is deployed using Streamlit.
+
+**Live Dashboard:**  
+https://app-playstore-bubble-chart-qsge9tqslyj6asem6236pv.streamlit.app/
+
+---
+
+## ⚙️ How to Run the Project Locally
+
+### Step 1 — Clone the Repository
+
+```bash
+git clone https://github.com/ritesh-72/google-playstore-bubble-chart.git
