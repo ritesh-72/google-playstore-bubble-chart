@@ -24,6 +24,9 @@ show_task3 = 18 <= current_time.hour < 24
 # Task 4: 4 PM to 6 PM IST
 show_task4 = 16 <= current_time.hour < 18
 
+# Task 5: 3 PM to 5 PM IST
+show_task5 = 15 <= current_time.hour < 17
+
 
 # ==========================================================
 # LOAD CSV FILES
@@ -1382,4 +1385,222 @@ else:
     st.info(
         "Task 4 graph is available only "
         "between 4 PM and 6 PM IST."
+    )
+
+# ==========================================================
+# TASK 5 : GROUPED BAR CHART
+# ==========================================================
+
+if show_task5:
+
+    st.title(
+        "Task 5 : Average Rating vs Total Reviews"
+    )
+
+    # ------------------------------------------------------
+    # LOAD TASK 5 DATA
+    # ------------------------------------------------------
+
+    df5 = pd.read_csv(
+        "googleplaystore.csv"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT NUMERIC COLUMNS
+    # ------------------------------------------------------
+
+    df5["Rating"] = pd.to_numeric(
+        df5["Rating"],
+        errors="coerce"
+    )
+
+    df5["Reviews"] = pd.to_numeric(
+        df5["Reviews"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT SIZE TO MB
+    # ------------------------------------------------------
+
+    df5["Size_MB"] = df5["Size"].apply(convert_size)
+
+    # ------------------------------------------------------
+    # CONVERT INSTALLS TO NUMERIC
+    # ------------------------------------------------------
+
+    df5["Installs"] = (
+        df5["Installs"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.replace("+", "", regex=False)
+    )
+
+    df5["Installs"] = pd.to_numeric(
+        df5["Installs"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT LAST UPDATED TO DATE
+    # ------------------------------------------------------
+
+    df5["Last Updated"] = pd.to_datetime(
+        df5["Last Updated"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # TASK 5 FILTERS
+    # ------------------------------------------------------
+
+    df5 = df5[
+        # Average Rating must be at least 4.0
+        (df5["Rating"] >= 4.0)
+
+        &
+
+        # App Size must be at least 10 MB
+        (df5["Size_MB"] >= 10)
+
+        &
+
+        # Last Updated month must be January
+        (df5["Last Updated"].dt.month == 1)
+
+    ].copy()
+
+    # ------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # ------------------------------------------------------
+
+    df5 = df5.dropna(
+        subset=[
+            "Category",
+            "Installs",
+            "Rating",
+            "Reviews"
+        ]
+    )
+
+    # ------------------------------------------------------
+    # CHECK FILTERED DATA
+    # ------------------------------------------------------
+
+    if df5.empty:
+
+        st.warning(
+            "No data available after applying Task 5 filters."
+        )
+
+    else:
+
+        # --------------------------------------------------
+        # TOP 10 CATEGORIES BY TOTAL INSTALLS
+        # --------------------------------------------------
+
+        top10_categories5 = (
+            df5
+            .groupby(
+                "Category",
+                as_index=False
+            )
+            .agg(
+                Total_Installs=("Installs", "sum"),
+                Average_Rating=("Rating", "mean"),
+                Total_Reviews=("Reviews", "sum")
+            )
+            .sort_values(
+                "Total_Installs",
+                ascending=False
+            )
+            .head(10)
+        )
+
+        # --------------------------------------------------
+        # CREATE GROUPED BAR CHART
+        # --------------------------------------------------
+
+        fig5 = go.Figure()
+
+        # Average Rating bars
+        fig5.add_trace(
+            go.Bar(
+                x=top10_categories5["Category"],
+                y=top10_categories5["Average_Rating"],
+                name="Average Rating",
+                yaxis="y",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Average Rating: %{y:.2f}"
+                    "<extra></extra>"
+                )
+            )
+        )
+
+        # Total Review Count bars
+        fig5.add_trace(
+            go.Bar(
+                x=top10_categories5["Category"],
+                y=top10_categories5["Total_Reviews"],
+                name="Total Review Count",
+                yaxis="y2",
+                hovertemplate=(
+                    "<b>%{x}</b><br>"
+                    "Total Reviews: %{y:,.0f}"
+                    "<extra></extra>"
+                )
+            )
+        )
+
+        # --------------------------------------------------
+        # GRAPH SETTINGS
+        # --------------------------------------------------
+
+        fig5.update_layout(
+            barmode="group",
+            width=1000,
+            height=700,
+            title=(
+                "Top 10 App Categories by Installs: "
+                "Average Rating vs Total Review Count"
+            ),
+            xaxis=dict(
+                title="App Category",
+                tickangle=-35
+            ),
+            yaxis=dict(
+                title="Average Rating",
+                range=[0, 5.2]
+            ),
+            yaxis2=dict(
+                title="Total Review Count",
+                overlaying="y",
+                side="right",
+                showgrid=False
+            ),
+            legend_title="Metric",
+            hovermode="x unified"
+        )
+
+        # --------------------------------------------------
+        # DISPLAY GRAPH
+        # --------------------------------------------------
+
+        st.plotly_chart(
+            fig5,
+            use_container_width=True
+        )
+
+        st.caption(
+            "Filters: Average Rating >= 4.0, "
+            "Size >= 10 MB, and Last Updated in January. "
+            "Top 10 categories are selected by total installs."
+        )
+
+else:
+
+    st.info(
+        "Task 5 graph is available only "
+        "between 3 PM and 5 PM IST."
     )
