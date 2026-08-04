@@ -13,22 +13,22 @@ from zoneinfo import ZoneInfo
 current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 # Task 1: 5 PM to 7 PM IST
-show_task1 = 17 <= current_time.hour < 24
+show_task1 = 17 <= current_time.hour < 19  # 5 PM–7 PM IST
 
 # Task 2: 6 PM to 8 PM IST
-show_task2 = 18 <= current_time.hour < 24
+show_task2 = 18 <= current_time.hour < 20  # 6 PM–8 PM IST
 
 # Task 3: 6 PM to 9 PM IST
-show_task3 = 18 <= current_time.hour < 24
+show_task3 = 18 <= current_time.hour < 21  # 6 PM–9 PM IST
 
 # Task 4: 4 PM to 6 PM IST
-show_task4 = 16 <= current_time.hour < 24
+show_task4 = 16 <= current_time.hour < 18  # 4 PM–6 PM IST
 
 # Task 5: 3 PM to 5 PM IST
-show_task5 = 15 <= current_time.hour < 24
+show_task5 = 15 <= current_time.hour < 17  # 3 PM–5 PM IST
 
 # Task 6: 1 PM to 2 PM IST
-show_task6 = 13 <= current_time.hour < 24
+show_task6 = 13 <= current_time.hour < 14  # 1 PM–2 PM IST
 
 
 # ==========================================================
@@ -262,6 +262,7 @@ else:
     )
 
 
+# Task 2 uses the available dataset fields; the source CSV has no country field.
 # ==========================================================
 # TASK 2 : INTERACTIVE CHOROPLETH MAP
 # ==========================================================
@@ -1285,9 +1286,9 @@ if show_task4:
         # --------------------------------------------------
 
         category_translation4 = {
-            "Travel & Local": "Voyage et Local",
-            "Productivity": "Productividad",
-            "Photography": "写真"
+            "TRAVEL_AND_LOCAL": "Voyage et Local",
+            "PRODUCTIVITY": "Productividad",
+            "PHOTOGRAPHY": "写真"
         }
 
         cumulative4_display = cumulative4.rename(
@@ -1330,26 +1331,15 @@ if show_task4:
         # for significant-growth months.
         # --------------------------------------------------
 
-        first_highlight = True
-
         for month in highlight_months4:
 
             fig4.add_vrect(
                 x0=month,
                 x1=month + pd.DateOffset(months=1),
-                fillcolor="rgba(255, 140, 0, 0.32)",
+                fillcolor="rgba(255, 140, 0, 0.22)",
                 line_width=0,
-                layer="above",
-                annotation_text=(
-                    "Growth > 25%"
-                    if first_highlight
-                    else None
-                ),
-                annotation_position="top",
-                annotation_font_size=10
+                layer="below"
             )
-
-            first_highlight = False
 
         # --------------------------------------------------
         # GRAPH SETTINGS
@@ -1533,6 +1523,8 @@ if show_task5:
                 y=top10_categories5["Average_Rating"],
                 name="Average Rating",
                 yaxis="y",
+                offsetgroup="rating",
+                width=0.32,
                 hovertemplate=(
                     "<b>%{x}</b><br>"
                     "Average Rating: %{y:.2f}"
@@ -1548,6 +1540,8 @@ if show_task5:
                 y=top10_categories5["Total_Reviews"],
                 name="Total Review Count",
                 yaxis="y2",
+                offsetgroup="reviews",
+                width=0.32,
                 hovertemplate=(
                     "<b>%{x}</b><br>"
                     "Total Reviews: %{y:,.0f}"
@@ -1598,7 +1592,8 @@ if show_task5:
         st.caption(
             "Filters: Average Rating >= 4.0, "
             "Size >= 10 MB, and Last Updated in January. "
-            "Top 10 categories are selected by total installs."
+            "Top 10 categories are selected by total installs. "
+            "Average Rating and Total Reviews use separate y-axes."
         )
 
 else:
@@ -1927,6 +1922,7 @@ if show_task6:
         )
 
         st.caption(
+            "Free apps have $0 price-derived revenue; the $10,000 revenue threshold is therefore applied to paid apps. "
             "Filters: installs >= 10,000, paid-app revenue >= "
             "$10,000, Android version > 4.0, size > 15 MB, "
             "Content Rating = Everyone, and app name length "
