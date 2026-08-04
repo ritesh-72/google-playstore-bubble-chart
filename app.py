@@ -21,6 +21,9 @@ show_task2 = 18 <= current_time.hour < 24
 # Task 3: 6 PM to 9 PM IST
 show_task3 = 18 <= current_time.hour < 24
 
+# Task 4: 4 PM to 6 PM IST
+show_task4 = 16 <= current_time.hour < 18
+
 
 # ==========================================================
 # LOAD CSV FILES
@@ -1071,4 +1074,312 @@ else:
         "Task 3 graph is available only "
         "between 6 PM and 9 PM IST."
 
+    )
+
+# ==========================================================
+# TASK 4 : STACKED AREA CHART
+# ==========================================================
+
+if show_task4:
+
+    st.title(
+        "Task 4 : Cumulative Installs by App Category"
+    )
+
+    # ------------------------------------------------------
+    # LOAD TASK 4 DATA
+    # ------------------------------------------------------
+
+    df4 = pd.read_csv(
+        "googleplaystore.csv"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT NUMERIC COLUMNS
+    # ------------------------------------------------------
+
+    df4["Rating"] = pd.to_numeric(
+        df4["Rating"],
+        errors="coerce"
+    )
+
+    df4["Reviews"] = pd.to_numeric(
+        df4["Reviews"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT SIZE TO MB
+    # ------------------------------------------------------
+
+    df4["Size_MB"] = df4["Size"].apply(convert_size)
+
+    # ------------------------------------------------------
+    # CONVERT INSTALLS TO NUMERIC
+    # ------------------------------------------------------
+
+    df4["Installs"] = (
+        df4["Installs"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.replace("+", "", regex=False)
+    )
+
+    df4["Installs"] = pd.to_numeric(
+        df4["Installs"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT LAST UPDATED TO DATE
+    # ------------------------------------------------------
+
+    df4["Last Updated"] = pd.to_datetime(
+        df4["Last Updated"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # TASK 4 FILTERS
+    # ------------------------------------------------------
+
+    df4 = df4[
+        # Average Rating >= 4.2
+        (df4["Rating"] >= 4.2)
+
+        &
+
+        # App name must NOT contain any numbers
+        (~df4["App"]
+         .astype(str)
+         .str.contains(
+             r"\d",
+             regex=True,
+             na=False
+         ))
+
+        &
+
+        # Category starts with T or P
+        (df4["Category"]
+         .astype(str)
+         .str.upper()
+         .str.startswith(
+             ("T", "P"),
+             na=False
+         ))
+
+        &
+
+        # Reviews > 1,000
+        (df4["Reviews"] > 1000)
+
+        &
+
+        # App size between 20 MB and 80 MB
+        (df4["Size_MB"] >= 20)
+
+        &
+
+        (df4["Size_MB"] <= 80)
+
+    ].copy()
+
+    # ------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # ------------------------------------------------------
+
+    df4 = df4.dropna(
+        subset=[
+            "App",
+            "Category",
+            "Installs",
+            "Last Updated"
+        ]
+    )
+
+    # ------------------------------------------------------
+    # CHECK FILTERED DATA
+    # ------------------------------------------------------
+
+    if df4.empty:
+
+        st.warning(
+            "No data available after applying Task 4 filters."
+        )
+
+    else:
+
+        # --------------------------------------------------
+        # CREATE MONTH COLUMN
+        # --------------------------------------------------
+
+        df4["Month"] = (
+            df4["Last Updated"]
+            .dt.to_period("M")
+            .dt.to_timestamp()
+        )
+
+        # --------------------------------------------------
+        # MONTHLY INSTALLS BY CATEGORY
+        # --------------------------------------------------
+
+        monthly4 = (
+            df4
+            .groupby(
+                [
+                    "Month",
+                    "Category"
+                ],
+                as_index=False
+            )["Installs"]
+            .sum()
+            .sort_values(
+                [
+                    "Category",
+                    "Month"
+                ]
+            )
+        )
+
+        # --------------------------------------------------
+        # CONVERT TO WIDE FORMAT
+        # --------------------------------------------------
+
+        pivot4 = (
+            monthly4
+            .pivot(
+                index="Month",
+                columns="Category",
+                values="Installs"
+            )
+            .fillna(0)
+            .sort_index()
+        )
+
+        # --------------------------------------------------
+        # CUMULATIVE INSTALLS
+        # --------------------------------------------------
+
+        cumulative4 = pivot4.cumsum()
+
+        # --------------------------------------------------
+        # MONTH-OVER-MONTH GROWTH
+        # A month is highlighted if ANY category grows >25%
+        # --------------------------------------------------
+
+        growth4 = pivot4.pct_change()
+
+        highlight_months4 = growth4.index[
+            (growth4 > 0.25).any(axis=1)
+        ]
+
+        # --------------------------------------------------
+        # TRANSLATE LEGEND CATEGORY NAMES
+        # --------------------------------------------------
+
+        category_translation4 = {
+            "Travel & Local": "Voyage et Local",
+            "Productivity": "Productividad",
+            "Photography": "写真"
+        }
+
+        cumulative4_display = cumulative4.rename(
+            columns=category_translation4
+        )
+
+        # --------------------------------------------------
+        # CREATE STACKED AREA CHART
+        # --------------------------------------------------
+
+        fig4 = go.Figure()
+
+        for category in cumulative4.columns:
+
+            display_category = category_translation4.get(
+                category,
+                category
+            )
+
+            fig4.add_trace(
+                go.Scatter(
+                    x=cumulative4.index,
+                    y=cumulative4[category],
+                    mode="lines",
+                    name=display_category,
+                    stackgroup="one",
+                    line=dict(width=1.5),
+                    hovertemplate=(
+                        f"<b>{display_category}</b><br>"
+                        "Month: %{x|%b %Y}<br>"
+                        "Cumulative Installs: %{y:,.0f}"
+                        "<extra></extra>"
+                    )
+                )
+            )
+
+        # --------------------------------------------------
+        # HIGHLIGHT MONTHS WITH >25% MOM GROWTH
+        # The stronger overlay visually increases intensity
+        # for significant-growth months.
+        # --------------------------------------------------
+
+        first_highlight = True
+
+        for month in highlight_months4:
+
+            fig4.add_vrect(
+                x0=month,
+                x1=month + pd.DateOffset(months=1),
+                fillcolor="rgba(255, 140, 0, 0.32)",
+                line_width=0,
+                layer="above",
+                annotation_text=(
+                    "Growth > 25%"
+                    if first_highlight
+                    else None
+                ),
+                annotation_position="top",
+                annotation_font_size=10
+            )
+
+            first_highlight = False
+
+        # --------------------------------------------------
+        # GRAPH SETTINGS
+        # --------------------------------------------------
+
+        fig4.update_layout(
+            width=1000,
+            height=700,
+            title=(
+                "Cumulative Number of Installs "
+                "Over Time by App Category"
+            ),
+            xaxis_title="Month",
+            yaxis_title="Cumulative Installs",
+            legend_title="App Category",
+            hovermode="x unified"
+        )
+
+        # --------------------------------------------------
+        # DISPLAY GRAPH
+        # --------------------------------------------------
+
+        st.plotly_chart(
+            fig4,
+            use_container_width=True
+        )
+
+        st.caption(
+            "Highlighted months indicate that at least one "
+            "category increased by more than 25% "
+            "month-over-month."
+        )
+
+else:
+
+    st.info(
+        "Task 4 graph is available only "
+        "between 4 PM and 6 PM IST."
     )
