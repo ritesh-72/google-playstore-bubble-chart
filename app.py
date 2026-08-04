@@ -13,19 +13,22 @@ from zoneinfo import ZoneInfo
 current_time = datetime.now(ZoneInfo("Asia/Kolkata"))
 
 # Task 1: 5 PM to 7 PM IST
-show_task1 = 17 <= current_time.hour < 24
+show_task1 = 17 <= current_time.hour < 19
 
 # Task 2: 6 PM to 8 PM IST
-show_task2 = 18 <= current_time.hour < 24
+show_task2 = 18 <= current_time.hour < 20
 
 # Task 3: 6 PM to 9 PM IST
-show_task3 = 18 <= current_time.hour < 24
+show_task3 = 18 <= current_time.hour < 21
 
 # Task 4: 4 PM to 6 PM IST
 show_task4 = 16 <= current_time.hour < 18
 
 # Task 5: 3 PM to 5 PM IST
 show_task5 = 15 <= current_time.hour < 17
+
+# Task 6: 1 PM to 2 PM IST
+show_task6 = 13 <= current_time.hour < 14
 
 
 # ==========================================================
@@ -1603,4 +1606,337 @@ else:
     st.info(
         "Task 5 graph is available only "
         "between 3 PM and 5 PM IST."
+    )
+
+# ==========================================================
+# TASK 6 : DUAL-AXIS CHART
+# ==========================================================
+
+if show_task6:
+
+    st.title(
+        "Task 6 : Average Installs vs Revenue — Free vs Paid"
+    )
+
+    # ------------------------------------------------------
+    # LOAD TASK 6 DATA
+    # ------------------------------------------------------
+
+    df6 = pd.read_csv(
+        "googleplaystore.csv"
+    )
+
+    # ------------------------------------------------------
+    # CONVERT NUMERIC COLUMNS
+    # ------------------------------------------------------
+
+    df6["Rating"] = pd.to_numeric(
+        df6["Rating"],
+        errors="coerce"
+    )
+
+    df6["Installs"] = (
+        df6["Installs"]
+        .astype(str)
+        .str.replace(",", "", regex=False)
+        .str.replace("+", "", regex=False)
+    )
+
+    df6["Installs"] = pd.to_numeric(
+        df6["Installs"],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CLEAN SIZE
+    # ------------------------------------------------------
+
+    df6["Size_MB"] = df6["Size"].apply(convert_size)
+
+    # ------------------------------------------------------
+    # ANDROID VERSION
+    # Extract the first numeric version from values such
+    # as "4.1 and up".
+    # ------------------------------------------------------
+
+    df6["Android_Version_Num"] = pd.to_numeric(
+        df6["Android Ver"]
+        .astype(str)
+        .str.extract(r"(\d+(?:\.\d+)?)")[0],
+        errors="coerce"
+    )
+
+    # ------------------------------------------------------
+    # CLEAN PRICE AND CALCULATE REVENUE
+    # Revenue = installs × price for paid apps.
+    # Free apps have revenue = 0.
+    # ------------------------------------------------------
+
+    df6["Price_Num"] = (
+        df6["Price"]
+        .astype(str)
+        .str.replace("$", "", regex=False)
+        .str.replace(",", "", regex=False)
+    )
+
+    df6["Price_Num"] = pd.to_numeric(
+        df6["Price_Num"],
+        errors="coerce"
+    )
+
+    df6["Price_Num"] = df6["Price_Num"].fillna(0)
+
+    df6["App_Type"] = df6["Type"].astype(str).str.strip().str.title()
+
+    df6["App_Type"] = df6["App_Type"].where(
+        df6["App_Type"].isin(["Free", "Paid"]),
+        "Unknown"
+    )
+
+    df6["Revenue"] = (
+        df6["Installs"] * df6["Price_Num"]
+    )
+
+    # ------------------------------------------------------
+    # TASK 6 FILTERS
+    # ------------------------------------------------------
+
+    df6 = df6[
+        # At least 10,000 installs
+        (df6["Installs"] >= 10000)
+
+        &
+
+        # Android version > 4.0
+        (df6["Android_Version_Num"] > 4.0)
+
+        &
+
+        # Size > 15 MB
+        (df6["Size_MB"] > 15)
+
+        &
+
+        # Content Rating must be Everyone
+        (df6["Content Rating"].astype(str).str.strip() == "Everyone")
+
+        &
+
+        # App name <= 30 characters, including spaces
+        # and special characters
+        (df6["App"].astype(str).str.len() <= 30)
+
+        &
+
+        # Only Free and Paid apps
+        (df6["App_Type"].isin(["Free", "Paid"]))
+
+    ].copy()
+
+    # ------------------------------------------------------
+    # REVENUE FILTER
+    #
+    # Free apps naturally have $0 direct price revenue.
+    # To preserve the requested Free-vs-Paid comparison,
+    # the $10,000 revenue threshold is applied to paid apps.
+    # Free apps remain eligible because their direct revenue
+    # is $0 by definition.
+    # ------------------------------------------------------
+
+    df6 = df6[
+        (df6["App_Type"] == "Free")
+        |
+        (
+            (df6["App_Type"] == "Paid")
+            & (df6["Revenue"] >= 10000)
+        )
+    ].copy()
+
+    # ------------------------------------------------------
+    # REMOVE MISSING VALUES
+    # ------------------------------------------------------
+
+    df6 = df6.dropna(
+        subset=[
+            "Category",
+            "Installs",
+            "Revenue"
+        ]
+    )
+
+    # ------------------------------------------------------
+    # TOP 3 CATEGORIES BY TOTAL INSTALLS
+    # ------------------------------------------------------
+
+    top3_categories6 = (
+        df6
+        .groupby(
+            "Category",
+            as_index=False
+        )["Installs"]
+        .sum()
+        .sort_values(
+            "Installs",
+            ascending=False
+        )
+        .head(3)["Category"]
+        .tolist()
+    )
+
+    df6 = df6[
+        df6["Category"].isin(top3_categories6)
+    ].copy()
+
+    # ------------------------------------------------------
+    # CHECK FILTERED DATA
+    # ------------------------------------------------------
+
+    if df6.empty or len(top3_categories6) == 0:
+
+        st.warning(
+            "No data available after applying Task 6 filters."
+        )
+
+    else:
+
+        # --------------------------------------------------
+        # AGGREGATE BY CATEGORY AND FREE/PAID
+        # --------------------------------------------------
+
+        summary6 = (
+            df6
+            .groupby(
+                [
+                    "Category",
+                    "App_Type"
+                ],
+                as_index=False
+            )
+            .agg(
+                Average_Installs=("Installs", "mean"),
+                Total_Revenue=("Revenue", "sum")
+            )
+        )
+
+        # Ensure both Free and Paid appear for each category
+        # when data exists; missing combinations are filled
+        # with zero for chart readability.
+        complete_index6 = pd.MultiIndex.from_product(
+            [
+                top3_categories6,
+                ["Free", "Paid"]
+            ],
+            names=["Category", "App_Type"]
+        )
+
+        summary6 = (
+            summary6
+            .set_index(["Category", "App_Type"])
+            .reindex(complete_index6, fill_value=0)
+            .reset_index()
+        )
+
+        # --------------------------------------------------
+        # CREATE DUAL-AXIS GROUPED BAR CHART
+        # --------------------------------------------------
+
+        fig6 = go.Figure()
+
+        # Average installs: left y-axis
+        for app_type in ["Free", "Paid"]:
+
+            data_type = summary6[
+                summary6["App_Type"] == app_type
+            ]
+
+            fig6.add_trace(
+                go.Bar(
+                    x=data_type["Category"],
+                    y=data_type["Average_Installs"],
+                    name=f"{app_type} - Average Installs",
+                    offsetgroup=app_type,
+                    yaxis="y",
+                    hovertemplate=(
+                        "<b>%{x}</b><br>"
+                        f"Type: {app_type}<br>"
+                        "Average Installs: %{y:,.0f}"
+                        "<extra></extra>"
+                    )
+                )
+            )
+
+        # Revenue: right y-axis
+        for app_type in ["Free", "Paid"]:
+
+            data_type = summary6[
+                summary6["App_Type"] == app_type
+            ]
+
+            fig6.add_trace(
+                go.Bar(
+                    x=data_type["Category"],
+                    y=data_type["Total_Revenue"],
+                    name=f"{app_type} - Revenue",
+                    offsetgroup=f"{app_type}_revenue",
+                    yaxis="y2",
+                    hovertemplate=(
+                        "<b>%{x}</b><br>"
+                        f"Type: {app_type}<br>"
+                        "Revenue: $%{y:,.2f}"
+                        "<extra></extra>"
+                    )
+                )
+            )
+
+        # --------------------------------------------------
+        # GRAPH SETTINGS
+        # --------------------------------------------------
+
+        fig6.update_layout(
+            barmode="group",
+            width=1000,
+            height=700,
+            title=(
+                "Top 3 App Categories: "
+                "Average Installs vs Revenue"
+            ),
+            xaxis=dict(
+                title="App Category"
+            ),
+            yaxis=dict(
+                title="Average Installs",
+                side="left"
+            ),
+            yaxis2=dict(
+                title="Revenue (USD)",
+                overlaying="y",
+                side="right",
+                showgrid=False
+            ),
+            legend_title="App Type / Metric",
+            hovermode="x unified"
+        )
+
+        # --------------------------------------------------
+        # DISPLAY GRAPH
+        # --------------------------------------------------
+
+        st.plotly_chart(
+            fig6,
+            use_container_width=True
+        )
+
+        st.caption(
+            "Filters: installs >= 10,000, paid-app revenue >= "
+            "$10,000, Android version > 4.0, size > 15 MB, "
+            "Content Rating = Everyone, and app name length "
+            "<= 30 characters. Top 3 categories are selected "
+            "by total installs."
+        )
+
+else:
+
+    st.info(
+        "Task 6 graph is available only "
+        "between 1 PM and 2 PM IST."
     )
